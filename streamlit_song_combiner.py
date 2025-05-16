@@ -68,14 +68,15 @@ def create_combined_pptx(song_numbers, font_color_hex, bg_color_hex, bg_img_byte
                 tf.vertical_anchor = 1  # Middle
                 tf.word_wrap = True
 
-                for line in chunk:
-                    p = tf.add_paragraph()
-                    p.text = line
-                    p.font.size = Pt(44)
-                    p.font.name = 'Calibri'
-                    p.font.bold = True
-                    p.font.color.rgb = RGBColor(*hex_to_rgb(font_color_hex))
-                    p.alignment = 1  # Center align
+                paragraph = tf.paragraphs[0]
+                paragraph.clear()
+                paragraph.text = "\n".join(chunk)
+                paragraph.alignment = 1  # Centered
+                run = paragraph.runs[0]
+                run.font.size = Pt(44)
+                run.font.name = 'Calibri'
+                run.font.bold = True
+                run.font.color.rgb = RGBColor(*hex_to_rgb(font_color_hex))
 
                 # Footer text box
                 footer_box = s.shapes.add_textbox(Inches(0.5), Inches(6.9), Inches(12.33), Inches(0.5))
@@ -91,7 +92,8 @@ def create_combined_pptx(song_numbers, font_color_hex, bg_color_hex, bg_img_byte
                 p.alignment = 1
 
                 if logo_bytes:
-                    s.shapes.add_picture(logo_bytes, Inches(0.2), Inches(6.7), width=Inches(1.0))
+                    # Adjusted logo position upward slightly to ensure visibility
+                    s.shapes.add_picture(logo_bytes, Inches(0.2), Inches(6.4), width=Inches(1.0))
 
         # Add a blank slide after each song
         blank_slide = prs.slides.add_slide(prs.slide_layouts[6])
