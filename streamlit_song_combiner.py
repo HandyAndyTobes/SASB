@@ -9,7 +9,6 @@ from io import BytesIO
 st.set_page_config(page_title="SASB Song Combiner", layout="wide")
 st.title("🎶 SASB Song Combiner Tool")
 
-# Form Inputs
 with st.form("song_form"):
     song_nums = st.text_input("Enter Song Numbers (comma-separated)", "2, 3, 5")
     font_color = st.color_picker("Font Color", "#FFFFFF")
@@ -55,16 +54,14 @@ def create_combined_pptx(song_numbers, font_color_hex, bg_color_hex, bg_img_byte
             for i, chunk in enumerate(chunks):
                 s = prs.slides.add_slide(prs.slide_layouts[6])
 
-                # Background color
+                # Background
                 s.background.fill.solid()
                 r, g, b = hex_to_rgb(bg_color_hex)
                 s.background.fill.fore_color.rgb = RGBColor(r, g, b)
 
-                # Background image
                 if bg_img_bytes:
                     s.shapes.add_picture(bg_img_bytes, 0, 0, width=prs.slide_width, height=prs.slide_height)
 
-                # Main text box
                 textbox = s.shapes.add_textbox(Inches(0.5), Inches(1.0), Inches(12.33), Inches(5.5))
                 tf = textbox.text_frame
                 tf.clear()
@@ -78,9 +75,8 @@ def create_combined_pptx(song_numbers, font_color_hex, bg_color_hex, bg_img_byte
                     run.font.name = 'Calibri'
                     run.font.bold = True
                     run.font.color.rgb = RGBColor(*hex_to_rgb(font_color_hex))
-                    p.alignment = 1  # Center
+                    p.alignment = 1
 
-                # Footer text box
                 footer_box = s.shapes.add_textbox(Inches(0.5), Inches(6.9), Inches(12.33), Inches(0.5))
                 footer_tf = footer_box.text_frame
                 p = footer_tf.paragraphs[0]
@@ -93,9 +89,14 @@ def create_combined_pptx(song_numbers, font_color_hex, bg_color_hex, bg_img_byte
                 run.font.color.rgb = RGBColor(*hex_to_rgb(font_color_hex))
                 p.alignment = 1
 
-                # Optional logo
                 if logo_bytes:
                     s.shapes.add_picture(logo_bytes, Inches(0.2), Inches(6.7), width=Inches(1.0))
+
+        # Add a blank slide after each song
+        blank_slide = prs.slides.add_slide(prs.slide_layouts[6])
+        blank_slide.background.fill.solid()
+        r, g, b = hex_to_rgb(bg_color_hex)
+        blank_slide.background.fill.fore_color.rgb = RGBColor(r, g, b)
 
     output = BytesIO()
     prs.save(output)
