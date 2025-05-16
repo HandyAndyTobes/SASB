@@ -64,6 +64,7 @@ def create_combined_pptx(song_numbers, font_color_hex, bg_color_hex, bg_img_byte
                 if bg_img_bytes:
                     s.shapes.add_picture(bg_img_bytes, 0, 0, width=prs.slide_width, height=prs.slide_height)
 
+                # Main text box
                 textbox = s.shapes.add_textbox(Inches(0.5), Inches(1.0), Inches(12.33), Inches(5.5))
                 tf = textbox.text_frame
                 tf.clear()
@@ -80,15 +81,18 @@ def create_combined_pptx(song_numbers, font_color_hex, bg_color_hex, bg_img_byte
                     run.font.color.rgb = RGBColor(r, g, b)
                     p.alignment = 1  # Center
 
+                # Footer text box
                 footer_box = s.shapes.add_textbox(Inches(1), Inches(6.9), Inches(10), Inches(0.5))
                 footer_tf = footer_box.text_frame
-                footer_tf.text = footer
-                run = footer_tf.paragraphs[0].runs[0]
+                p = footer_tf.paragraphs[0]
+                p.clear()
+                run = p.add_run()
+                run.text = footer
                 run.font.size = Pt(20)
                 run.font.name = "Calibri"
                 run.font.bold = True
                 run.font.color.rgb = RGBColor(*hex_to_rgb(font_color_hex))
-                footer_tf.paragraphs[0].alignment = 1
+                p.alignment = 1
 
                 if logo_bytes:
                     s.shapes.add_picture(logo_bytes, Inches(0.2), Inches(6.7), width=Inches(1.0))
