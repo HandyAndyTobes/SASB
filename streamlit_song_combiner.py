@@ -3,6 +3,7 @@ import streamlit as st
 import os
 from pptx import Presentation
 from pptx.util import Inches, Pt
+from pptx.dml.color import RGBColor
 from io import BytesIO
 
 st.set_page_config(page_title="SASB Song Combiner", layout="wide")
@@ -20,10 +21,18 @@ with st.form("song_form"):
 def split_text_into_chunks(lines, chunk_size):
     return [lines[i:i + chunk_size] for i in range(0, len(lines), chunk_size)]
 
+def hex_to_rgb(hex_str):
+    hex_str = hex_str.lstrip("#")
+    return tuple(int(hex_str[i:i+2], 16) for i in (0, 2, 4))
+
 def create_combined_pptx(song_numbers, font_color_hex, bg_color_hex, bg_img_bytes, logo_bytes):
     prs = Presentation()
     prs.slide_width = Inches(13.33)
     prs.slide_height = Inches(7.5)
+
+    if not os.path.exists("songs"):
+        st.error("⚠️ The 'songs' folder is missing. Please upload .pptx files to a folder named 'songs'.")
+        st.stop()
 
     for num in song_numbers:
         match = next((f for f in os.listdir("songs") if f.startswith(f"{num} ")), None)
@@ -48,8 +57,10 @@ def create_combined_pptx(song_numbers, font_color_hex, bg_color_hex, bg_img_byte
 
                 # Background color
                 s.background.fill.solid()
-                s.background.fill.fore_color.rgb = int(bg_color_hex[1:], 16).to_bytes(3, "big")
+                r, g, b = hex_to_rgb(bg_color_hex)
+                s.background.fill.fore_color.rgb = RGBColor(r, g, b)
 
+                # Background image
                 if bg_img_bytes:
                     s.shapes.add_picture(bg_img_bytes, 0, 0, width=prs.slide_width, height=prs.slide_height)
 
@@ -65,16 +76,18 @@ def create_combined_pptx(song_numbers, font_color_hex, bg_color_hex, bg_img_byte
                     run.font.size = Pt(44)
                     run.font.name = 'Calibri'
                     run.font.bold = True
-                    run.font.color.rgb = int(font_color_hex[1:], 16).to_bytes(3, "big")
+                    r, g, b = hex_to_rgb(font_color_hex)
+                    run.font.color.rgb = RGBColor(r, g, b)
                     p.alignment = 1  # Center
 
                 footer_box = s.shapes.add_textbox(Inches(1), Inches(6.9), Inches(10), Inches(0.5))
                 footer_tf = footer_box.text_frame
                 footer_tf.text = footer
-                footer_tf.paragraphs[0].runs[0].font.size = Pt(20)
-                footer_tf.paragraphs[0].runs[0].font.name = "Calibri"
-                footer_tf.paragraphs[0].runs[0].font.bold = True
-                footer_tf.paragraphs[0].runs[0].font.color.rgb = int(font_color_hex[1:], 16).to_bytes(3, "big")
+                run = footer_tf.paragraphs[0].runs[0]
+                run.font.size = Pt(20)
+                run.font.name = "Calibri"
+                run.font.bold = True
+                run.font.color.rgb = RGBColor(*hex_to_rgb(font_color_hex))
                 footer_tf.paragraphs[0].alignment = 1
 
                 if logo_bytes:
