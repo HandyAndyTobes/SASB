@@ -66,17 +66,18 @@ def create_combined_pptx(song_numbers, font_color_hex, bg_color_hex, bg_img_byte
                 tf = textbox.text_frame
                 tf.clear()
                 tf.vertical_anchor = 1  # Middle
+                tf.word_wrap = True
 
                 for line in chunk:
                     p = tf.add_paragraph()
-                    run = p.add_run()
-                    run.text = line
-                    run.font.size = Pt(44)
-                    run.font.name = 'Calibri'
-                    run.font.bold = True
-                    run.font.color.rgb = RGBColor(*hex_to_rgb(font_color_hex))
-                    p.alignment = 1
+                    p.text = line
+                    p.font.size = Pt(44)
+                    p.font.name = 'Calibri'
+                    p.font.bold = True
+                    p.font.color.rgb = RGBColor(*hex_to_rgb(font_color_hex))
+                    p.alignment = 1  # Center align
 
+                # Footer text box
                 footer_box = s.shapes.add_textbox(Inches(0.5), Inches(6.9), Inches(12.33), Inches(0.5))
                 footer_tf = footer_box.text_frame
                 p = footer_tf.paragraphs[0]
