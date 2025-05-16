@@ -52,7 +52,7 @@ def create_combined_pptx(song_numbers, font_color_hex, bg_color_hex, bg_img_byte
             footer = lines[-1] if len(lines) > 1 else ""
             chunks = split_text_into_chunks(lines[:-1], 8)
 
-            for chunk in chunks:
+            for i, chunk in enumerate(chunks):
                 s = prs.slides.add_slide(prs.slide_layouts[6])
 
                 # Background color
@@ -77,12 +77,11 @@ def create_combined_pptx(song_numbers, font_color_hex, bg_color_hex, bg_img_byte
                     run.font.size = Pt(44)
                     run.font.name = 'Calibri'
                     run.font.bold = True
-                    r, g, b = hex_to_rgb(font_color_hex)
-                    run.font.color.rgb = RGBColor(r, g, b)
+                    run.font.color.rgb = RGBColor(*hex_to_rgb(font_color_hex))
                     p.alignment = 1  # Center
 
                 # Footer text box
-                footer_box = s.shapes.add_textbox(Inches(1), Inches(6.9), Inches(10), Inches(0.5))
+                footer_box = s.shapes.add_textbox(Inches(0.5), Inches(6.9), Inches(12.33), Inches(0.5))
                 footer_tf = footer_box.text_frame
                 p = footer_tf.paragraphs[0]
                 p.clear()
@@ -94,6 +93,7 @@ def create_combined_pptx(song_numbers, font_color_hex, bg_color_hex, bg_img_byte
                 run.font.color.rgb = RGBColor(*hex_to_rgb(font_color_hex))
                 p.alignment = 1
 
+                # Optional logo
                 if logo_bytes:
                     s.shapes.add_picture(logo_bytes, Inches(0.2), Inches(6.7), width=Inches(1.0))
 
