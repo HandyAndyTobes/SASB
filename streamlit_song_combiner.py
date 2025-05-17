@@ -48,13 +48,10 @@ def create_combined_pptx(song_numbers, font_color_hex, bg_color_hex, bg_img_byte
             if not lines:
                 continue
 
-            # Assume last line is footer (e.g. "Chorus" or "1 of 5")
-            footer = lines[-1]
-            content_lines = lines[:-1]
+            footer = lines[-1] if len(lines) > 1 else ""
+            chunks = split_text_into_chunks(lines[:-1], 8)
 
-            chunks = split_text_into_chunks(content_lines, 8)
-
-            for i, chunk in enumerate(chunks):
+            for chunk in chunks:
                 s = prs.slides.add_slide(prs.slide_layouts[6])
 
                 # Background
@@ -65,23 +62,24 @@ def create_combined_pptx(song_numbers, font_color_hex, bg_color_hex, bg_img_byte
                 if bg_img_bytes:
                     s.shapes.add_picture(bg_img_bytes, 0, 0, width=prs.slide_width, height=prs.slide_height)
 
-                # Main lyrics text box (centered)
+                # Main text box
                 textbox = s.shapes.add_textbox(Inches(0.5), Inches(1.0), Inches(12.33), Inches(5.5))
                 tf = textbox.text_frame
                 tf.clear()
-                tf.vertical_anchor = 1  # Vertically centered
+                tf.vertical_anchor = 1  # Middle
                 tf.word_wrap = True
 
-                para = tf.paragraphs[0]
-                para.text = "\n".join(chunk)
-                para.alignment = 1  # Centered
-                run = para.runs[0]
-                run.font.size = Pt(44)
-                run.font.name = 'Calibri'
-                run.font.bold = True
-                run.font.color.rgb = RGBColor(*hex_to_rgb(font_color_hex))
+                for line in chunk:
+                    p = tf.add_paragraph()
+                    run = p.add_run()
+                    run.text = line
+                    run.font.size = Pt(44)
+                    run.font.name = 'Calibri'
+                    run.font.bold = True
+                    run.font.color.rgb = RGBColor(*hex_to_rgb(font_color_hex))
+                    p.alignment = 1  # Center
 
-                # Footer label
+                # Footer text box
                 footer_box = s.shapes.add_textbox(Inches(0.5), Inches(6.9), Inches(12.33), Inches(0.5))
                 footer_tf = footer_box.text_frame
                 p = footer_tf.paragraphs[0]
@@ -97,7 +95,7 @@ def create_combined_pptx(song_numbers, font_color_hex, bg_color_hex, bg_img_byte
                 if logo_bytes:
                     s.shapes.add_picture(logo_bytes, Inches(0.2), Inches(6.4), width=Inches(1.0))
 
-        # Add blank slide between songs
+        # Add a blank slide between songs
         blank_slide = prs.slides.add_slide(prs.slide_layouts[6])
         blank_slide.background.fill.solid()
         r, g, b = hex_to_rgb(bg_color_hex)
